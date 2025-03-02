@@ -11,7 +11,7 @@ tags:
   - name: Reaction
   - name: Comment
   - name: Search
-  - name: Subscribe
+  - name: Subscription
   
 paths:
   /photos:
@@ -48,11 +48,11 @@ paths:
         '500':
           description: Ошибка на сервере    
           
-  /subscribe:
+  /subscription:
     post:
       summary: Создание подписки на пользователя
       tags:
-        - Subscribe
+        - Subscription
       parameters:
         - name: Idempotency-Key
           in: header
@@ -65,14 +65,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Subscribe'
+              $ref: '#/components/schemas/Subscription'
       responses:
         '200':
           description: Подписка создана
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ResponseSubscribe'
+                $ref: '#/components/schemas/ResponseSubscription'
         '400':
           description: Ошибка в запросе
         '401':
@@ -82,13 +82,13 @@ paths:
         '500':
           description: Ошибка на сервере
           
-  /subscribe/{subscribe_id}:        
+  /subscription/{subscription_id}:        
     delete:
       summary: Удаление подписки на пользователя
       tags:
-        - Subscribe
+        - Subscription
       parameters:
-        - name: subscribe_id
+        - name: subscription_id
           in: path
           schema:
             type: string
@@ -141,7 +141,7 @@ paths:
           description: Ошибка на сервере
 
     get:
-      summary: Просмотр ленты постов пользователя (личной или другого пользователя) в обратном хронологическом порядке
+      summary: Просмотр ленты постов пользователя (личной, другого пользователя, посты по геолокации) в обратном хронологическом порядке
       tags:
         - Post
       parameters:
@@ -149,7 +149,20 @@ paths:
           in: query
           schema:
             type: string
-          required: true
+        - name: address_component
+          in: query
+          schema:        
+            type: array
+            description: Массив с данными геолокации (страна, город и тд)
+            items:
+              type: object
+              properties:
+                name:
+                  type: string
+                  example: "Россия"
+                type:
+                  type: string
+                  example: "COUNTRY"
         - name: page
           in: query
           schema:
@@ -179,7 +192,7 @@ paths:
           description: Ошибка на сервере     
         
     
-  /posts/feed:
+  /feed:
     get:
       summary: Просмотр ленты, основанных на подписках пользователя в обратном хронологическом порядке
       tags:
@@ -476,54 +489,7 @@ paths:
         '500':
           description: Ошибка на сервере    
           
-  /search/geo/posts:
-    get:
-      summary: Поиск популярных мест путешествий
-      tags:
-        - Search
-      parameters:
-        - name: address_component
-          in: query
-          schema:        
-            type: array
-            description: Массив с данными геолокации (страна, город и тд)
-            items:
-              type: object
-              properties:
-                name:
-                  type: string
-                  example: "Россия"
-                type:
-                  type: string
-                  example: "COUNTRY"
-          required: true   
-        - name: page
-          in: query
-          schema:
-            type: integer
-          description: Номер страницы
-          required: true
-        - name: recordsPerPage
-          in: query
-          schema:
-            type: integer
-          description: Количество записей на странице
-          required: true      
-      responses:
-        '200':
-          description: Данные найдены
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ResponsePostsList'
-        '400':
-          description: Ошибка в запросе
-        '401':
-          description: Unauthorized
-        '404':
-          description: Данные не найдены
-        '500':
-          description: Ошибка на сервере   
+
               
 components:
   schemas:
@@ -549,7 +515,7 @@ components:
             type: string
             format: binary  
     
-    Subscribe:
+    Subscription:
       required:
         - user_id
         - target_id
@@ -563,13 +529,13 @@ components:
           type: string
           example: "96e5c9f7-d569-4606-8a57-67c7d8c40f66"  
       
-    ResponseSubscribe:
+    ResponseSubscription:
       properties:
-        subscribe_id:
+        subscription_id:
           description: ИД подписки
           type: string
           example: "96e5c9f7-d569-4606-8a57-67c7d8c40f66"  
-        subscrube_create_dttm:
+        subscription_create_dttm:
           description: Дата и время создания подписки
           type: string
           example: "2018-11-21T18:30:00.000Z"
