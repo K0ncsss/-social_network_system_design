@@ -10,8 +10,8 @@ tags:
   - name: Post
   - name: Reaction
   - name: Comment
-  - name: Search
   - name: Subscription
+  - name: Geo
   
 paths:
   /photos:
@@ -48,7 +48,7 @@ paths:
         '500':
           description: Ошибка на сервере    
           
-  /subscription:
+  /subscriptions:
     post:
       summary: Создание подписки на пользователя
       tags:
@@ -82,7 +82,7 @@ paths:
         '500':
           description: Ошибка на сервере
           
-  /subscription/{subscription_id}:        
+  /subscriptions/{subscription_id}:        
     delete:
       summary: Удаление подписки на пользователя
       tags:
@@ -455,11 +455,11 @@ paths:
           description: Ошибка на сервере    
           
           
-  /search/geo:
+  /geo:
     get:
       summary: Поиск популярных мест путешествий (отсортированных по количеству постов)
       tags:
-        - Search
+        - Geo
       parameters:
         - name: page
           in: query
