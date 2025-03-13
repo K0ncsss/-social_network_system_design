@@ -1,0 +1,804 @@
+openapi: 3.0.0
+info:
+  title: Service for travelers
+  description: Сервис для публикации постов о путешествиях
+  version: 1.0.0
+servers:
+  - url:  https://wow-travelers.ru
+tags:
+  - name: Photo
+  - name: Post
+  - name: Reaction
+  - name: Comment
+  - name: Subscription
+  - name: Geo
+  
+paths:
+  /photos:
+    post:
+      summary: Загрузка фотографий
+      tags:
+        - Photo
+      parameters:
+        - name: Idempotency-Key
+          in: header
+          schema:
+            type: string
+          required: true
+          description: Ключ идемпотентности для предотвращения дублирования запросов
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UploadPhoto'
+      responses:
+        '200':
+          description: Фотографии загружены
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponsePhoto'
+        '400':
+          description: Ошибка в запросе
+        '401':
+          description: Unauthorized
+        '409':
+          description: Запрос с таким ключом идемпотентности уже обработан
+        '500':
+          description: Ошибка на сервере    
+          
+  /subscriptions:
+    post:
+      summary: Создание подписки на пользователя
+      tags:
+        - Subscription
+      parameters:
+        - name: Idempotency-Key
+          in: header
+          schema:
+            type: string
+          required: true
+          description: Ключ идемпотентности для предотвращения дублирования запросов
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Subscription'
+      responses:
+        '200':
+          description: Подписка создана
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseSubscription'
+        '400':
+          description: Ошибка в запросе
+        '401':
+          description: Unauthorized
+        '409':
+          description: Запрос с таким ключом идемпотентности уже обработан
+        '500':
+          description: Ошибка на сервере
+          
+  /subscriptions/{subscription_id}:        
+    delete:
+      summary: Удаление подписки на пользователя
+      tags:
+        - Subscription
+      parameters:
+        - name: subscription_id
+          in: path
+          schema:
+            type: string
+          required: true
+          description: ИД подписки
+      responses:
+        '200':
+          description: Успешно
+        '400':
+          description: Ошибка в запросе
+        '401':
+          description: Unauthorized
+        '404':
+          description: Не найдено
+        '500':
+          description: Ошибка на сервере    
+          
+  /posts:
+    post:
+      summary: Создание поста
+      tags:
+        - Post
+      parameters:
+        - name: Idempotency-Key
+          in: header
+          schema:
+            type: string
+          required: true
+          description: Ключ идемпотентности для предотвращения дублирования запросов
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreatePost'
+      responses:
+        '200':
+          description: Пост создан
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponsePost'
+        '400':
+          description: Ошибка в запросе
+        '401':
+          description: Unauthorized
+        '409':
+          description: Запрос с таким ключом идемпотентности уже обработан
+        '500':
+          description: Ошибка на сервере
+
+    get:
+      summary: Просмотр ленты постов пользователя (личной, другого пользователя, посты по геолокации) в обратном хронологическом порядке
+      tags:
+        - Post
+      parameters:
+        - name: user_id
+          in: query
+          schema:
+            type: string
+        - name: address_component
+          in: query
+          schema:        
+            type: array
+            description: Массив с данными геолокации (страна, город и тд)
+            items:
+              type: object
+              properties:
+                name:
+                  type: string
+                  example: "Россия"
+                type:
+                  type: string
+                  example: "COUNTRY"
+        - name: page
+          in: query
+          schema:
+            type: integer
+          description: Номер страницы
+          required: true
+        - name: recordsPerPage
+          in: query
+          schema:
+            type: integer
+          description: Количество записей на странице
+          required: true      
+      responses:
+        '200':
+          description: Данные найдены
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponsePostsList'
+        '400':
+          description: Ошибка в запросе
+        '401':
+          description: Unauthorized
+        '404':
+          description: Данные не найдены
+        '500':
+          description: Ошибка на сервере     
+        
+    
+  /feed:
+    get:
+      summary: Просмотр ленты, основанных на подписках пользователя в обратном хронологическом порядке
+      tags:
+        - Post
+      parameters:
+        - name: user_id
+          in: query
+          description: ИД пользователя-инициатора запроса
+          schema:
+            type: string
+          required: true
+        - name: page
+          in: query
+          schema:
+            type: integer
+          description: Номер страницы
+          required: true
+        - name: recordsPerPage
+          in: query
+          schema:
+            type: integer
+          description: Количество записей на странице
+          required: true      
+      responses:
+        '200':
+          description: Данные найдены
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponsePostsList'
+        '400':
+          description: Ошибка в запросе
+        '401':
+          description: Unauthorized
+        '404':
+          description: Данные не найдены
+        '500':
+          description: Ошибка на сервере     
+    
+  /posts/{post_id}:
+    delete:
+      summary: Удаление поста {post_id}
+      tags:
+        - Post
+      parameters:
+        - name: post_id
+          in: path
+          schema:
+            type: string
+          required: true
+          description: Идентификатор поста
+      responses:
+        '200':
+          description: Успешно
+        '400':
+          description: Ошибка в запросе
+        '401':
+          description: Unauthorized
+        '404':
+          description: Не найдено
+        '500':
+          description: Ошибка на сервере     
+          
+  /reactions:
+    post:
+      summary: Добавление лайка к посту
+      tags:
+        - Reaction 
+      parameters:
+        - name: Idempotency-Key
+          in: header
+          schema:
+            type: string
+          required: true
+          description: Ключ идемпотентности для предотвращения дублирования запросо
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateReaction'        
+      responses:
+        '200':
+          description: Успешно
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseReaction'
+        '400':
+          description: Ошибка в запросе
+        '401':
+          description: Unauthorized
+        '409':
+          description: Запрос с таким ключом идемпотентности уже обработан
+        '404':
+          description: Пост не найден
+        '500':
+          description: Ошибка на сервере
+    get:
+      summary: Просмотр числа комметриев под постом
+      tags:
+        - Reaction  
+      parameters:
+        - name: post_id
+          in: query
+          schema:
+            type: string
+          required: true
+          description: Идентификатор постa
+        - name: page
+          in: query
+          schema:
+            type: integer
+          description: Номер страницы
+          required: true
+        - name: recordsPerPage
+          in: query
+          schema:
+            type: integer
+          description: Количество записей на странице
+          required: true
+      responses:
+        '200':
+          description: Данные найдены
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReactionInfo'
+        '400':
+          description: Ошибка в запросе
+        '401':
+          description: Unauthorized
+        '404':
+          description: Данные не найдены
+        '500':
+          description: Ошибка на сервере    
+          
+          
+  /reactions/{reaction_id}:
+    delete:
+      summary: Удаление лайка к посту
+      tags:
+        - Reaction
+      parameters:
+        - name: reaction_id
+          in: path
+          schema:
+            type: string
+          required: true
+          description: Идентификатор реакции
+      responses:
+        '200':
+          description: Успешно
+        '400':
+          description: Ошибка в запросе
+        '401':
+          description: Unauthorized
+        '404':
+          description: Не найдено
+        '500':
+          description: Ошибка на сервере    
+          
+  /comments:
+    post:
+      summary: Добавление комментария к посту
+      tags:
+        - Comment 
+      parameters:
+        - name: Idempotency-Key
+          in: header
+          schema:
+            type: string
+          required: true
+          description: Ключ идемпотентности для предотвращения дублирования запросов
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateComment'
+      responses:
+        '200':
+          description: Успешно
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseComment'
+        '400':
+          description: Ошибка в запросе
+        '401':
+          description: Unauthorized
+        '409':
+          description: Запрос с таким ключом идемпотентности уже обработан
+        '404':
+          description: Пост не найден
+        '500':
+          description: Ошибка на сервере
+    get:
+      summary: Просмотр списка комментариев под постом
+      tags:
+        - Comment 
+      parameters:
+        - name: post_id
+          in: query
+          schema:
+            type: string
+          required: true
+          description: Идентификатор поста   
+        - name: page
+          in: query
+          schema:
+            type: integer
+          description: Номер страницы
+          required: true
+        - name: recordsPerPage
+          in: query
+          schema:
+            type: integer
+          description: Количество записей на странице
+          required: true
+      responses:
+        '200':
+          description: Данные найдены
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommentList'
+        '400':
+          description: Ошибка в запросе
+        '401':
+          description: Unauthorized
+        '404':
+          description: Данные не найдены
+        '500':
+          description: Ошибка на сервере  
+          
+          
+  /comments/{comment_id}:
+    delete:
+      summary: Удаление комментария к посту
+      tags:
+        - Comment
+      parameters:
+        - name: comment_id
+          in: path
+          schema:
+            type: string
+          required: true
+          description: Идентификатор комментария
+      responses:
+        '200':
+          description: Успешно
+        '400':
+          description: Ошибка в запросе
+        '401':
+          description: Unauthorized
+        '404':
+          description: Не найдено
+        '500':
+          description: Ошибка на сервере    
+          
+          
+  /geo:
+    get:
+      summary: Поиск популярных мест путешествий (отсортированных по количеству постов)
+      tags:
+        - Geo
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+          description: Номер страницы
+          required: true
+        - name: recordsPerPage
+          in: query
+          schema:
+            type: integer
+          description: Количество записей на странице
+          required: true      
+      responses:
+        '200':
+          description: Данные найдены
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseGeo'
+        '400':
+          description: Ошибка в запросе
+        '401':
+          description: Unauthorized
+        '404':
+          description: Данные не найдены
+        '500':
+          description: Ошибка на сервере    
+          
+
+              
+components:
+  schemas:
+    UploadPhoto:
+      required:
+        - photos
+      properties:
+        photos:
+          description: Массив фотографий
+          type: array
+          items:
+            type: string
+            format: binary  
+            
+    ResponsePhoto:
+      required:
+        - photos_URL
+      properties:
+        photos_URL:
+          description: Массив ссылок на фотографии
+          type: array
+          items:
+            type: string
+            format: binary  
+    
+    Subscription:
+      required:
+        - user_id
+        - target_id
+      properties:
+        user_id:
+          description: ИД пользователя - инициатор подписки
+          type: string
+          example: "96e5c9f7-d569-4606-8a57-67c7d8c40f66"             
+        target_id:
+          description: ИД пользователя - цели подписки
+          type: string
+          example: "96e5c9f7-d569-4606-8a57-67c7d8c40f66"  
+      
+    ResponseSubscription:
+      properties:
+        subscription_id:
+          description: ИД подписки
+          type: string
+          example: "96e5c9f7-d569-4606-8a57-67c7d8c40f66"  
+        subscription_create_dttm:
+          description: Дата и время создания подписки
+          type: string
+          example: "2018-11-21T18:30:00.000Z"
+        user_id:
+          description: ИД пользователя - инициатор подписки
+          type: string
+          example: "96e5c9f7-d569-4606-8a57-67c7d8c40f66"             
+        target_id:
+          description: ИД пользователя - цели подписки
+          type: string
+          example: "96e5c9f7-d569-4606-8a57-67c7d8c40f66"       
+      
+    CreatePost:
+      type: object
+      required:
+        - text
+        - photos
+        - user_id
+        - geo_name
+        - geo_longitude
+        - geo_latitude
+      properties:
+        text: 
+          description: Описание под постом
+          type: string
+          example: "Всем привет, едем на Байкал!"
+        photos:
+          description: Массив ссылок на фотографии
+          type: array
+          items:
+            type: string
+        user_id:
+          description: ИД пользователя - создателя поста
+          type: string
+          example: "96e5c9f7-d569-4606-8a57-67c7d8c40f66"
+        geo_info:
+          description: Массив с данными геолокации (страна, город и тд)
+          type: object
+          properties:
+            address_full:
+              description: Полный адрес
+              type: string
+              example: "страна Россия, город Москва"
+            address_component:
+              type: array
+              items:
+                type: object
+                properties:
+                  name:
+                    type: string
+                    example: "Россия"
+                  type:
+                    type: string
+                    example: "COUNTRY"
+            geo_longitude: 
+              type: number
+              format: float
+              example: 41.011218
+            geo_latitude:
+              type: number
+              
+    ResponsePost:
+      type: object
+      properties:
+        post_id:
+          description: ИД поста
+          type: string
+          example: "96e5c9f7-d569-4606-8a57-67c7d8c40f66"
+        post_create_dttm:
+          description: Дата и время создания поста
+          type: string
+          example: "2018-11-21T18:30:00.000Z"
+        text: 
+          description: Описание под постом
+          type: string
+          example: "Всем привет, едем на Байкал!"
+        photos:
+          description: Массив ссылок на фотографии
+          type: array
+          items:
+            type: string
+        user_id:
+          description: ИД пользователя - создателя поста
+          type: string
+          example: "96e5c9f7-d569-4606-8a57-67c7d8c40f66"
+        geo_info:
+          description: Массив с данными геолокации (страна, город и тд)
+          type: object
+          properties:
+            geo_id:
+              description: ИД геолокации
+              type: string
+              example: "96e5c9f7-d569-4606-8a57-67c7d8c40f66"            
+            address_full:
+              description: Полный адрес
+              type: string
+              example: "страна Россия, город Москва"
+            address_component:
+              type: array
+              items:
+                type: object
+                properties:
+                  name:
+                    type: string
+                    example: "Россия"
+                  type:
+                    type: string
+                    example: "COUNTRY"
+            geo_longitude: 
+              type: number
+              format: float
+              example: 41.011218
+            geo_latitude:
+              type: number
+              
+    ResponsePostsList:
+      description: Список постов
+      type: array
+      items:
+        allOf: 
+          - $ref: '#/components/schemas/ResponsePost'
+        properties:
+          nickname:
+            description: Ник автора поста
+            type: string
+            example: "Nasty_Travel"
+                
+    CreateReaction:
+      type: object
+      properties:
+        user_id:
+          description: ИД пользователя - создателя реакции
+          type: string
+          example: "96e5c9f7-d569-4606-8a57-67c7d8c40f66"
+        post_id:
+          description: ИД поста
+          type: string
+          example: "96e5c9f7-d569-4606-8a57-67c7d8c40f66"    
+          
+    ResponseReaction:
+      type: object
+      properties:
+        reaction_id:
+          description: ИД реакции
+          type: string
+          example: "96e5c9f7-d569-4606-8a57-67c7d8c40f66"
+        user_id:
+          description: ИД пользователя - создателя реакции
+          type: string
+          example: "96e5c9f7-d569-4606-8a57-67c7d8c40f66"
+        post_id:
+          description: ИД поста
+          type: string
+          example: "96e5c9f7-d569-4606-8a57-67c7d8c40f66"
+        reaction_value:
+           description: Количество лайков у поста
+           type: integer
+           example: 235
+        reaction_create_dttm:
+          description: Дата и время создания рекции
+          type: string
+          example: "2018-11-21T18:30:00.000Z"
+    
+    ReactionInfo:
+      type: object
+      properties:
+        post_id:
+          description: ИД поста
+          type: string
+          example: "96e5c9f7-d569-4606-8a57-67c7d8c40f66"
+        reaction_value:
+           description: Количество лайков у поста
+           type: integer
+           example: 235    
+    
+    CreateComment:
+      type: object
+      properties:
+        user_id:
+          description: ИД пользователя - создателя комментария
+          type: string
+          example: "96e5c9f7-d569-4606-8a57-67c7d8c40f66"
+        post_id:
+          description: ИД поста
+          type: string
+          example: "96e5c9f7-d569-4606-8a57-67c7d8c40f66"
+        comment:
+          description: Комментарий
+          type: string
+          example: "Здорово, тоже хочу поехать на Байкал!"
+          
+    ResponseComment:
+      type: object
+      properties:
+        comment_id:
+          description: ИД комментария
+          type: string
+          example: "96e5c9f7-d569-4606-8a57-67c7d8c40f66"       
+        user_id:
+          description: ИД пользователя - создателя комментария
+          type: string
+          example: "96e5c9f7-d569-4606-8a57-67c7d8c40f66"
+        post_id:
+          description: ИД поста
+          type: string
+          example: "96e5c9f7-d569-4606-8a57-67c7d8c40f66"
+        comment:
+          description: Комментарий
+          type: string
+          example: "Здорово, тоже хочу поехать на Байкал!"
+        comment_create_dttm:
+          description: Дата и время создания комментария
+          type: string
+          example: "2018-11-21T18:30:00.000Z"
+          
+    CommentList:
+      allOf:
+        - $ref: "#/components/schemas/ResponseComment"
+      properties:
+        nickname:
+          description: Ник автора поста
+          type: string
+          example: "Nasty_Travel"
+     
+    ResponseGeo:
+      type: array
+      items:
+        type: object
+        properties:
+          count_posts:
+            description: Количество постов в разрезе геолокации
+            type: integer
+            example: 1024
+          geo_info:
+            description: Массив с данными геолокации (страна, город и тд)
+            type: object
+            properties:
+              geo_id:
+                description: ИД геолокации
+                type: string
+                example: "96e5c9f7-d569-4606-8a57-67c7d8c40f66"    
+              address_full:
+                description: Полный адрес
+                type: string
+                example: "страна Россия, город Москва"
+              address_component:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    name:
+                      type: string
+                      example: "Россия"
+                    type:
+                      type: string
+                      example: "COUNTRY"
+              geo_longitude: 
+                type: number
+                format: float
+                example: 41.011218
+              geo_latitude:
+                type: number 
+                format: float
+                example: 41.011218          
+    
+    
