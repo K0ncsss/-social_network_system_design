@@ -1,0 +1,5 @@
+#### Хранение фотографий постов в S3 хранилище.
+
+```
+s3://travel-bucket/posts/{post_id}/photos/photo.png...
+```
