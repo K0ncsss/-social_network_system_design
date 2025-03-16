@@ -1,13 +1,17 @@
+Cache по сервисам
 
-reaction_value
+## reaction_service_cache
+#### reaction_value: 
+```
   post_id:
   {
   reaction_value integer [not null, default: 0]
   react_value_update_dttm timestamp
   }
-
-
-popular_geo 
+```
+## geo_service_cache
+#### popular_geo 
+```
   geo:
   [{
   address_full string [not null]
@@ -22,8 +26,10 @@ popular_geo
   }
   ...
   ]           
-
-personal_posts 
+```
+## post_service_cache
+### personal_posts 
+```
   user_id: [
     {
     post_id integer 
@@ -36,8 +42,11 @@ personal_posts
     }
     ...
   ]
+```
 
-feed_posts 
+
+### feed_posts 
+```
   user_id: [
     {
     post_id integer 
@@ -50,3 +59,4 @@ feed_posts
     }
     ...
   ]
+```
