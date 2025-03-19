@@ -24,6 +24,8 @@
     - В среднем каждый пользователь публикует - 1 пост в неделю
     - В среднем каждый пользователь дает оценку 3 постам в сутки
     - В среднем каждый пользователь пишет 2 комментария в сутки
+    - В среднем каждый пользователь добавляет новую геолокацию раз в месяц
+    - В среднем каждый пользователь подписывается на другой аккаунт раз в 2 недели
     - В среднем каждый пользователь просматривает личную ленту - 1 раз в сутки 
     - В среднем каждый пользователь просматривает ленту, основанную на подписках - 5 раз в сутки
     - В среднем каждый пользователь просматривает ленту других пользователей - 3 раза в сутки
@@ -65,6 +67,14 @@ RPS_write (Comment):
 
     10 000 000*2 comment /86400 ~ 230 RPS
 
+RPS_write (Geo):
+
+    10 000 000*1 /30 /86400 ~ 4 RPS
+
+RPS_write (Subscription):
+
+    10 000 000*1 /14 /86400 ~ 9 RPS
+
 **RPS-read**
 
 All_reed_RPS: 
@@ -78,16 +88,19 @@ RPS_reed (Posts_feed):
     RPS_follow_feed: 10 000 000* 5 follow_feed /86400 ~ 580 RPS
     
     RPS_another_feed: 10 000 000*3 another_feed /86400 ~ 350 RPS
-    
-    RPS_Posts_feed = 120 + 580 + 350 =1050 RPS
 
-RPS_reed (Search):
-
-    RPS_search_location: 10 000 000*3 search_location /86400 ~ 350 RPS
-    
     RPS_posts_location: 10 000 000*3 posts_location /86400 ~ 350 RPS
     
-    RPS_Search = 350 +350 = 700 RPS
+    RPS_Posts_feed = 120 + 580 + 350 + 350  = 1400 RPS
+
+RPS_reed (Geo):
+
+    RPS_Geo: 10 000 000*3 search_location /86400 ~ 350 RPS
+    Геолокаци тянутся с постами, поэтому общий RPS_reed (Geo) = 350 RPS + RPS_Posts_feed = 350 + 1400 = 1750 RPS
+
+RPS_reed (Subscription) = RPS_follow_feed
+
+RPS_reed (Reaction) = RPS_Posts_feed
 
 RPS_reed (Comment): (viewing comments under a post)
 
@@ -146,22 +159,53 @@ Traffic_write (Comment):
 
     230 RPS * 25 Kb = 5750 Kb/sec ~ 6 Mb/sec
 
+**Geo_weight:**  ``` 4 Kb ```
+
+Geo fields:
+  1.	Id - 16 B~ 1 Kb
+  2.	geo_info - 16 B~ 1 Kb
+  3.	geo_longitude - 16 B~ 1 Kb
+  4.	geo_latitude -16 B~ 1 Kb
+
+Traffic_write (Geo):
+
+    4 RPS * 4 Kb = 16 Kb/sec ~ 0,5 Mb/sec
+
+**Subscription_weight:**  ``` 4 Kb ```
+
+Subscription fields:
+  1.	Id - 16 B~ 1 Kb
+  2.	target_id - 16 B~ 1 Kb
+  3.	User_id - 16 B~ 1 Kb
+  4.	Rec_create_dttm-16 B~ 1 Kb
+
+Traffic_write (Subscription):
+
+    9 RPS * 4 Kb = 36 Kb/sec ~ 0,5 Mb/sec
+
 ------------------
     
 **Traffic-read:**
 
 Traffic_reed_meta (Posts_feed): 
 
-    1050 RPS * (25 Kb) * 20 (pagination) ~ 525 000 Kb/sec ~ 525 Mb/sec
+    1400 RPS * (25 Kb) * 20 (pagination) ~ 700 000 Kb/sec ~ 700 Mb/sec
 
 Traffic_reed_media (Posts_feed): 
 
-    1050 RPS * (2500 Kb) * 20 (pagination) ~ 52 500 Mb/sec
+    1400 RPS * (2500 Kb) * 20 (pagination) ~ 70 000 Mb/sec
     
-Traffic_reed (Search) ```~ 21 000 Mb/sec```
-  - Traffic_search_location: 350 RPS * 1Kb (GEO_name) = 350 Kb/sec ~ 1 Mb/sec
-  - Traffic_posts_location_meta: 350 RPS * (25 Kb) * 20 (pagination) = 175 000 Kb/sec = 175 Mb/sec
-  - Traffic_posts_location_media: 350 RPS * (2500 Kb) * 20 (pagination) = 17 500 Mb/sec
+Traffic_reed (Geo)
+
+    1750 RPS * 4 Kb (GEO_name) * 10 (pagination) = 70 000 Kb/sec ~ 70 Mb/sec
+
+Traffic_reed (Subscription):
+
+    580 RPS * 4 Kb * 10 (pagination)  = 23 200 Kb/sec ~ 24 Mb/sec
+
+Traffic_reed (Reaction): 
+
+    1400 RPS * 5 Kb * 10 (pagination)  = 70000 Kb/sec ~ 70 Mb/sec
 
 Traffic_reed (Comment): 
 
