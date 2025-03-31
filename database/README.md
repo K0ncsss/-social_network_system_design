@@ -2,7 +2,7 @@
 Так как система - read-intencive, то решено часть данных, задейственных при чтении постов, геолокаций прихранивать в кэш - Redis.
 В файле cache описаны данные, которые будут хранятся в кэш.
 
-## Расчет дисков на 1 год
+## Расчет дисков на 1 год + количество хостов
 ### Posts
 ```
 traffic_per_second = 70 750 Mb/s
@@ -29,6 +29,8 @@ Disks = max (62, 24, 1) = 62
 SDD disks = (1577 * 4/12 ) /  25.6 Tb = 21 disks
 HDD disks = (1577 * 8/12 ) /  25.6 Tb = 52 disks
 Hosts = 73/2 = 37
+Hosts * RF = 37 * 2 = 74 hosts by 2 disks - с учетом реплик
+
 ```
 ### Reaction
 ```
@@ -53,6 +55,8 @@ Disks = max (3, 1, 1) = 3
 Хранение будет на SSD (nVME)
 SDD disks = 4 (с запасом)
 Hosts = 4/2 = 2
+
+Hosts * RF = 2 * 2 = 4 hosts by 2 disks - с учетом реплик
 
 ```
 ### Comment
@@ -85,6 +89,7 @@ Disks = max (8, 0.18, 0.046) = 8
 Хранение будет на SSD (SATA)
 SDD disks = 8
 Hosts = 8/2 = 4
+Hosts * RF = 4 * 2 = 8 hosts by 2 disks - с учетом реплик
 
 ```
 
@@ -118,6 +123,7 @@ Disks = max (1, 1, 1) = 1
 Хранение будет на SSD (nVME)
 SDD disks = 2 (с запасом)
 Hosts = 2/2 = 1
+Hosts * RF = 1 * 2 = 2 hosts by 2 disks - с учетом реплик
 
 ```
 ### Subscription
@@ -150,4 +156,5 @@ Disks = max (1, 1, 1) = 1
 Хранение будет на SSD (nVME)
 SDD disks = 2 (с запасом)
 Hosts = 2/2 = 1
+Hosts * RF = 1 * 2 = 2 hosts by 2 disks - с учетом реплик
 ```
