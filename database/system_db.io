@@ -1,4 +1,15 @@
-// 
+// Решение по распределенному хранению данных
+// Replication:
+// master-slave, async
+// RF = 2
+//
+// Sharding - key-based:
+// subscription - don't needed shardihg
+// post - by user_id
+// reaction - by post_id
+// comment - by post_id
+// geo - don't needed shardihg
+
 
 Table subscr_db.subscription{
   subscription_id uuid [pk]
