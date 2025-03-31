@@ -1,13 +1,9 @@
 #### Хранение фотографий постов в S3 хранилище.
 
 Решение по распределенному хранению данных
-
 Replication:
-
 master-slave, async
-
 RF = 2
-
 Sharding - key-based by post_id
 
 ```
