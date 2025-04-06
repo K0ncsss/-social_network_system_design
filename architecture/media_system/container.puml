@@ -1,0 +1,27 @@
+@startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+
+Person(user, "User")
+Container(LB, "Reverse proxy", "Nginx")
+Container(api, "API Gateway", "Java")
+Container(CDN, "CDN", "Selectel")
+ContainerQueue(EventQ, "Event queue", "Kafka", "Post events topic")
+Container(PostSystem, "Post System", "Software system", "Save and store post")
+
+System_Boundary(MediaSystem, "Media system") {
+Container(MediaService, "Media Service", "Java", "Store and save photos, generate secure url")
+ContainerDb(MediaDb, "Media database", "Ceph", "Store and save photos")
+}
+
+
+Rel(user, LB, "Gets secure url", "REST")
+Rel(LB, api, "Gets secure url", "REST")
+Rel(api, MediaService, "Gets secure url", "REST")
+Rel(MediaService, MediaDb, "Manage photos file (delete trash, moving from temporary to permanent )")
+Rel(user, MediaDb, "Upload photos")
+Rel(user, CDN, "Gets photos")
+Rel(CDN, MediaDb, "Gets photos (pull method)")
+Rel(PostSystem, EventQ, "Send event 'Post is created'")
+Rel(MediaService, EventQ, "Subscribes on posts events (to manage photos)")
+@enduml

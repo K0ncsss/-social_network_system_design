@@ -1,0 +1,22 @@
+@startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+Person(user, "User")
+Container(LB, "Reverse proxy", "Nginx", "")
+Container(api, "API Gateway", "Java")
+Container(api, "API Gateway", "Java")
+Container(FeedSystem, "Feed System", "Software system", "Store feeds")
+
+
+System_Boundary(CommentSystem, "Comment system") {
+Container(CommentService, "Comment Service", "Java", "Gets and save comments")
+ContainerDb(CommentDb, "Comment database", "PG", "Store comments")
+}
+
+
+Rel(user, LB, "Create/delete comment", "REST")
+Rel(LB, api, "Create/delete comment", "REST")
+Rel(api, CommentService, "Create/delete comment", "REST")
+Rel(CommentService, CommentDb, "Create/delete comment by post")
+Rel(FeedSystem, CommentService, "Gets comments", "REST")
+@enduml

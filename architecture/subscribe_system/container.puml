@@ -1,0 +1,24 @@
+@startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+Person(user, "User")
+Container(LB, "Reverse proxy", "Nginx", "")
+Container(api, "API Gateway", "Java")
+Container(api, "API Gateway", "Java")
+Container(FeedSystem, "Feed System", "Software system", "Store feeds")
+ContainerQueue(EventQ, "Event queue", "Kafka", "Subscribtion events topic")
+
+System_Boundary(SubscrSystem, "Subscription system") {
+Container(SubscrService, "Subscription Service", "Java", "Gets and save users subscriptions")
+ContainerDb(SubscrDb, "Subscription database", "PG", "Store users subscriptions")
+}
+
+
+Rel(user, LB, "Save/delete subscription", "REST")
+Rel(LB, api, "Save/delete subscription", "REST")
+Rel(api, SubscrService, "Save/delete subscription", "REST")
+Rel(SubscrService, SubscrDb, "Save/delete subscription/ gets users subscriptions")
+Rel(FeedSystem, SubscrService, "Gets users subscriptions", "REST")
+Rel(SubscrService, EventQ, "Send event 'Subscribtion is created or deleted'")
+Rel(FeedSystem, EventQ, "Subscribes on posts and subscribtions events (to fill and manage the feed)")
+@enduml

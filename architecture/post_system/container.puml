@@ -1,0 +1,31 @@
+@startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+Person(user, "User")
+Container(LB, "Reverse proxy", "Nginx", "")
+Container(api, "API Gateway", "Java")
+Container(api, "API Gateway", "Java")
+ContainerQueue(EventQ, "Event queue", "Kafka", "Post events")
+Container(FeedSystem, "Feed System", "Software system", "Store feeds")
+Container(MediaSystem, "Media System", "Software system", "Store and save photos, generate secure url")
+Container(ReactionSystem, "Reaction System", "Software system", "Store and count likes")
+
+
+
+System_Boundary(PostSystem, "Post system") {
+Container(PostService, "Post Service", "Java", "Saves post, creates evebt 'Post is created'")
+ContainerDb(PostDb, "Post database", "PG", "Store and save posts")
+}
+
+
+Rel(user, LB, "Saves post", "REST")
+Rel(LB, api, "Saves post", "REST")
+Rel(api, PostService, "Saves post", "REST")
+Rel(PostService, PostDb, "Saves post")
+Rel(PostService, EventQ, "Send post, event 'Post is created'")
+Rel(FeedSystem, PostService, "Gets posts", "REST")
+Rel(FeedSystem, EventQ, "Subscribes on posts events")
+Rel(MediaSystem, EventQ, "Subscribes on posts events (for manage photos)")
+Rel(ReactionSystem, EventQ, "Subscribes on posts events (for create reaction_value = 0)")
+
+@enduml

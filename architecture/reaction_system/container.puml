@@ -1,0 +1,28 @@
+@startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+Person(user, "User")
+Container(LB, "Reverse proxy", "Nginx", "")
+Container(api, "API Gateway", "Java")
+Container(api, "API Gateway", "Java")
+ContainerQueue(EventQ, "Event queue", "Kafka", "Post events topic")
+Container(PostSystem, "Post System", "Software system", "Save and store post")
+Container(FeedSystem, "Feed System", "Software system", "Store feeds")
+
+
+System_Boundary(ReactionSystem, "Reaction system") {
+Container(ReactionService, "Reaction Service", "Java", "Counts and gets likes")
+ContainerDb(ReactionDbP, "Reaction database", "PG", "Store likes")
+ContainerDb(ReactionDb, "Reaction cache", "Redis", "Store likes")
+}
+
+
+Rel(user, LB, "Create/delete like", "REST")
+Rel(LB, api, "Create/delete like", "REST")
+Rel(api, ReactionService, "Create/delete like", "REST")
+Rel(ReactionService, ReactionDbP, "Create/delete like and plus/minus amount of likes by post")
+Rel(ReactionService, ReactionDb, "Plus/minus amount of likes by post")
+Rel(ReactionService, EventQ, "Subscribes on posts events (to create reaction_value = 0)")
+Rel(PostSystem, EventQ, "Send event 'Post is created'")
+Rel(FeedSystem, ReactionService, "Gets amount of likes", "REST")
+@enduml
