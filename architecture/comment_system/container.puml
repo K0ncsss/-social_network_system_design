@@ -5,7 +5,8 @@ Person(user, "User")
 Container(LB, "Reverse proxy", "Nginx", "")
 Container(api, "API Gateway", "Java")
 Container(api, "API Gateway", "Java")
-
+Container(PostSystem, "Post System", "Software system", "Save and store post")
+ContainerQueue(EventQ, "Event queue", "Kafka", "Post events")
 
 System_Boundary(CommentSystem, "Comment system") {
 Container(CommentService, "Comment Service", "Java", "Gets and save comments")
@@ -17,4 +18,7 @@ Rel(user, LB, "Create/delete comment; Gets comments", "REST")
 Rel(LB, api, "Create/delete comment; Gets comments", "REST")
 Rel(api, CommentService, "Create/delete comment; Gets comments", "REST")
 Rel(CommentService, CommentDb, "Create/delete comment by post; Gets comments")
+Rel(PostSystem, EventQ, "Send post, event 'Post is created/deleted'")
+Rel(CommentService, EventQ, "Subscribes on posts events (for deleted comments by post)")
+
 @enduml
