@@ -1,0 +1,23 @@
+@startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+Person(user, "User")
+Container(LB, "Reverse proxy", "Nginx", "")
+Container(api, "API Gateway", "Java")
+Container(api, "API Gateway", "Java")
+Container(FeedSystem, "Feed System", "Software system", "Store feeds")
+
+
+System_Boundary(GeoSystem, "Geo system") {
+Container(GeoService, "Geo Service", "Java", "Gets and save geo-location")
+ContainerDb(GeoDb, "Geo database", "PG", "Store geo-location")
+}
+
+
+Rel(user, LB, "Gets popular locations/save post with new location", "REST")
+Rel(LB, api, "Gets popular locations/save post with new location", "REST")
+Rel(api, GeoService, "Gets popular locations/save post with new location", "REST")
+Rel(GeoService, GeoDb, "Gets popular locations/save post with new location/gets geo-location info for feed")
+Rel(FeedSystem, GeoService, "Gets geo-location info for feed", "REST")
+
+@enduml

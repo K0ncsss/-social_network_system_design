@@ -1,0 +1,18 @@
+@startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+Container(FeedSystem, "Feed System", "Software system", "Store feeds")
+
+
+System_Boundary(UserSystem, "User system") {
+Container(UserService, "User Service", "Java", "Gets and save user-info")
+ContainerDb(UserDbP, "User database", "PG", "Store user-info")
+ContainerDb(UserDb, "User cache", "Redis", "Store user-info for feed")
+}
+
+
+
+Rel(FeedSystem, UserService, "Gets user-info for feed", "REST")
+Rel(UserService, UserDb, "Gets user-info for feed")
+Rel(UserService, UserDbP, "Gets user-info for feed")
+@enduml

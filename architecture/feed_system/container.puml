@@ -1,0 +1,38 @@
+@startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+Person(user, "User")
+Container(LB, "Reverse proxy", "Nginx", "")
+Container(api, "API Gateway", "Java")
+Container(api, "API Gateway", "Java")
+ContainerQueue(EventQ, "Event queue", "Kafka", "Post events topic; Subscribtion events topic")
+Container(PostSystem, "Post System", "Software system", "Save and store post")
+Container(SubscrSystem, "Subscription System", "Software system", "Store and save subscriptions")
+Container(GeoSystem, "Geo System", "Software system", "Store and save geo-location")
+Container(ReactionSystem, "Reaction System", "Software system", "Store and count likes")
+Container(UserSystem, "User System", "Software system", "Store users information")
+
+
+System_Boundary(FeedSystem, "Feed system") {
+Container(FeedService, "Feed Service", "Java", "Gets feed")
+Container(ManagerFeedService, "Manager-Feed Service", "Java", "Manages, fills feed")
+ContainerDb(FeedDb, "Feed cache", "Redis", "Store feeds")
+}
+
+
+Rel(user, LB, "Gets feed", "REST")
+Rel(LB, api, "Gets feed", "REST")
+Rel(api, FeedService, "Gets feed", "REST")
+Rel(FeedService, FeedDb, "Gets feed")
+Rel(FeedService, ReactionSystem, "Gets amount of likes", "REST")
+Rel(FeedService, GeoSystem, "Gets geo-location", "REST")
+Rel(FeedService, UserSystem, "Gets users information (nicname)", "REST")
+Rel(FeedService, ManagerFeedService, "Warm up the feed-cache", "REST")
+
+Rel(ManagerFeedService, FeedDb, "Manages feed")
+Rel(PostSystem, EventQ, "Send event 'Post is created'")
+Rel(SubscrSystem, EventQ, "Send event 'Subscribtion is created or deleted'")
+Rel(ManagerFeedService, SubscrSystem, "Gets subscribtions", "REST")
+Rel(ManagerFeedService, PostSystem, "Gets posts for warming up the feed-cache", "REST")
+Rel(ManagerFeedService, EventQ, "Subscribes on posts and subscribtions events (to fill and manage the feed)")
+@enduml
