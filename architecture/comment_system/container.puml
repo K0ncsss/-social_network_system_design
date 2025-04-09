@@ -5,7 +5,6 @@ Person(user, "User")
 Container(LB, "Reverse proxy", "Nginx", "")
 Container(api, "API Gateway", "Java")
 Container(api, "API Gateway", "Java")
-Container(FeedSystem, "Feed System", "Software system", "Store feeds")
 
 
 System_Boundary(CommentSystem, "Comment system") {
@@ -14,9 +13,8 @@ ContainerDb(CommentDb, "Comment database", "PG", "Store comments")
 }
 
 
-Rel(user, LB, "Create/delete comment", "REST")
-Rel(LB, api, "Create/delete comment", "REST")
-Rel(api, CommentService, "Create/delete comment", "REST")
-Rel(CommentService, CommentDb, "Create/delete comment by post")
-Rel(FeedSystem, CommentService, "Gets comments", "REST")
+Rel(user, LB, "Create/delete comment; Gets comments", "REST")
+Rel(LB, api, "Create/delete comment; Gets comments", "REST")
+Rel(api, CommentService, "Create/delete comment; Gets comments", "REST")
+Rel(CommentService, CommentDb, "Create/delete comment by post; Gets comments")
 @enduml
