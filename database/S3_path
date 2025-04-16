@@ -4,7 +4,7 @@
 Replication:
 master-slave, async
 RF = 2
-Sharding - key-based by post_id
+Sharding - key-based by blob
 
 ```
 s3://travel-bucket/posts/{post_id}/photos/photo.png...

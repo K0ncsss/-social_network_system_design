@@ -1,0 +1,24 @@
+@startuml
+  !include https://raw.githubusercontent.com/RicardoNiepel/C4–PlantUML/release/1-0/C4_Container.puml
+
+
+Person(user, "User")
+Container(PostSystem, "Post System", "Software system", "Save and store post")
+Container(MediaSystem, "Media System", "Software system", "Store and save photos, generate secure url")
+Container(GeoSystem, "Geo System", "Software system", "Store and save geo-location")
+Container(ReactionSystem, "Reaction System", "Software system", "Store and count likes")
+Container(CommentSystem, "Comment System", "Software system", "Store and save comments")
+Container(UserSystem, "User System", "Software system", "Store users information")
+Container(SubscrSystem, "Subscription System", "Software system", "Store and save subscriptions")
+Container(FeedSystem, "Feed System", "Software system", "Store feeds")
+
+Rel(user, PostSystem, "Create/delete post")
+Rel(user, MediaSystem, "Gets and uploads photos")
+Rel(user, GeoSystem, "Create location, read popular location")
+Rel(user, ReactionSystem, "Create/delete like")
+Rel(user, CommentSystem, "Create/delete comment; Gets comments")
+Rel(user, UserSystem, "CRUD users information")
+Rel(user, SubscrSystem, "Create/delete subscription")
+Rel(user, FeedSystem, "Gets feed by user or by subscriptions of user")
+
+@enduml
